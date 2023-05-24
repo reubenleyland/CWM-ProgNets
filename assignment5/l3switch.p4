@@ -55,8 +55,9 @@ parser MyParser(packet_in packet,
         /* TODO: add parser logic */
         state start {
         packet.extract(hdr.ethernet);
-        packet.extract(hdr.ipv4);
-        transition accept;
+        transition select(hdr.ethernet.type) {
+	0x800: parse_ipv4;
+	default: accept;}
         
     }
 }
