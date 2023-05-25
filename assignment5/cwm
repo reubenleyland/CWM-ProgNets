@@ -6,11 +6,11 @@ INPUT="$1"
 # IP address of source host with CIDR (netmask)
 SRC_IP="169.254.46.161"
 # IP address of destination host
-DST_IP="169.254.21.80"
+DST_IP="192.168.10.1"
 # MAC address of destination host
-DST_MAC="e4:5f:01:8c:7e:52"
+DST_MAC="0c:37:96:5f:89:e8"
 # Interface name (USB-Ethernet) of the host
-ETH="eth0"
+ETH="enx0c37965f89d4"
 
 # Switch side (Raspberry Pi)
 # The directory to your P4 program
