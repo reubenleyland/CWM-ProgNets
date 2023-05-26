@@ -10,7 +10,12 @@
 
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
+register<bit<32>>(10) price_data_array
 
+counter index {
+	type : packets;
+	size : 32;
+}
 
 header ethernet_t {
     macAddr_t dstAddr;
@@ -18,6 +23,7 @@ header ethernet_t {
     bit<16>   etherType;
 }
 const bit<16> price_data_ETYPE = 0x1234;
+
 header price_data_t{
 	bit<32> price;
 	bit<32> time;
@@ -74,33 +80,50 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
 control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
-    action drop() {
-        mark_to_drop(standard_metadata);
+
+action send_back() {
+       macAddr_t tmp_mac;
+       tmp_mac = hdr.ethernet.dstAddr;
+       hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
+       hdr.ethernet.srcAddr = tmp_mac;
+       
+      standard_metadata.egress_spec = standard_metadata.ingress_port;
     }
- action signal_change(bit<32> signal) {
-        
-         
+
+action save_price_data(hdr.price_data.price,index)
+	price_data_array.write(index,data)
 	
-    }
- action price_compare() {
-        
-        
-      
-    } 
- 
- table previous_price{
- 	key = {
- 	hdr.price_data.time-1 :exact;
+action increment_counter() {
+	index.count(1)
+}
+
+action buy_signal(){
+ 	hdr.price_data.signal =  1  
  	}
- 	actions = {
- 	signal_change;
- 	price_compare;
- 	store_price;
- 	operation_drop;
- 	const default_action = operation_drop();
- 	
+action sell_signal(){
+ 	hdr.price_data.signal =  0  
+ 	} 
+action operation_drop() {
+        mark_to_drop(standard_metadata);
         }
-    }
+apply(increment_counter)
+apply(save_[price_data_array.write)
+	     
+apply{
+	if(hdr.price_data.price>price_data_array[index-1]){
+	sell_signal()
+	send_back()
+	}
+	if(hdr.rpice_data.price<price_daya_array[index-1]){
+	buy_signal
+	send_back()
+	else{
+	operation_drop()
+	
+	
+	
+ 
+ 
   
 /*************************************************************************
 ****************  E G R E S S   P R O C E S S I N G   *******************
@@ -109,11 +132,7 @@ control MyIngress(inout headers hdr,
 control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
-    apply { previous_price }
-    if hdr.price_data>hdr.price_data@@@@@@:
-    	signal_change.apply()
-    
-    	
+    apply { }
 }
 
 /*************************************************************************

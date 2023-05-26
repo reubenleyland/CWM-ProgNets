@@ -16,5 +16,5 @@ for i in range(0,10):
 	packet = eth_pkt/price_data(price=random.randrange(0,100),time=i)
 	i+=1
 	print(packet.summary)
-
+	
 
