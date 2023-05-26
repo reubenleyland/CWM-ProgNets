@@ -10,7 +10,7 @@
 
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
-bit<32> price_data_array[10];
+
 
 
 header ethernet_t {
@@ -76,7 +76,7 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
 control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
-                  
+register <bit<32>> (10) price_data_array;                 
 action send_back() {
        macAddr_t tmp_mac;
        tmp_mac = hdr.ethernet.dstAddr;
@@ -102,14 +102,16 @@ action operation_drop() {
         }
 	     
 apply{
+bit<32> last;
+price_data_array.read(last,hdr.price_data.time-1);
 	 
 	
 	save_price_data();
-	if(hdr.price_data.price>price_data_array[hdr.price_data.time-1]){
+	if(hdr.price_data.price>last){
 	sell_signal();
 	send_back();
 	}
-	if(hdr.price_data.price<price_data_array[hdr.price_data.time-1]){
+	if(hdr.price_data.price<last){
 	buy_signal();
 	send_back();
 	}
