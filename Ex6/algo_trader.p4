@@ -24,7 +24,7 @@ header price_data_t{
 	bit<32> price;
 	bit<32> time;
 	bit<32> signal;
-
+	
 }
 
 struct metadata {
