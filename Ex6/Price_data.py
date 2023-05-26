@@ -12,9 +12,10 @@ dst_MAC= "e4:5f:01:84:8c:86"
 
 class price_data(Packet):
 	name = "price_data"
-	fields_desc = [ IntField("price",0),   #define to price header
+	fields_desc = [ IntField("price",0),   #define  price header
                         IntField("time", 0),
-                        IntField("signal", 0),]
+                        IntField("signal", 0),
+                        IntField("quantity", 0)]
 
 eth_layer =Ether()
 eth_layer.src = src_MAC

@@ -24,6 +24,8 @@ header price_data_t{
 	bit<32> price;
 	bit<32> time;
 	bit<32> signal;
+	bit<32> quantity;
+	
 	
 }
 
@@ -76,7 +78,9 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
 control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
-register <bit<32>> (10) price_data_array;                 
+register <bit<32>> (10) price_data_array; 
+bit<32> quantity=hdr.price_data.quantity;
+               
 action send_back() {
        macAddr_t tmp_mac;
        tmp_mac = hdr.ethernet.dstAddr;
@@ -94,27 +98,50 @@ action save_price_data(){
 action buy_signal(){
  	hdr.price_data.signal =  1;
  	}
+action increase_units_held(){
+	quantity=quantity+1;
+	}
+	
 action sell_signal(){
  	hdr.price_data.signal =  0;
  	} 
+ 	
+action decrease_units_held(){
+	quantity=quantity-1;
+	}
+action update_quantity(){
+	hdr.price_data.quantity = quantity;
+	}
+
 action operation_drop() {
         mark_to_drop(standard_metadata);
         }
 	     
 apply{
 bit<32> last;
+
+
 price_data_array.read(last,hdr.price_data.time-1);
 	 
 	
 	save_price_data();
+	
 	if(hdr.price_data.price>last){
-	sell_signal();
-	send_back();
+		if(quantity>0){
+		sell_signal();
+		decrease_units_held();
+		update_quantity();
+		send_back();
+		}
 	}
 	if(hdr.price_data.price<last){
-	buy_signal();
-	send_back();
-	}
+		if(quantity<5){
+			buy_signal();
+			increase_units_held();
+			update_quantity();
+			send_back();
+		}
+	}	
 	else{
 	operation_drop();
 	}
