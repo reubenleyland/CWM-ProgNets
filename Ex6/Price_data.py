@@ -27,6 +27,6 @@ for i in range(0,10):
 	i+=1
 	print(packet.summary)
 	sendp(packet,iface="enx0c37965f89d4")
-	time.sleep(3)
+	time.sleep(5)
 
 

@@ -79,9 +79,9 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
 register <bit<32>> (10) price_data_array; 
-bit<32> quantity=hdr.price_data.quantity;
-               
-action send_back() {
+bit<32> quantity = hdr.price_data.quantity; 
+             
+action send_back(){
        macAddr_t tmp_mac;
        tmp_mac = hdr.ethernet.dstAddr;
        hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
@@ -98,24 +98,31 @@ action save_price_data(){
 action buy_signal(){
  	hdr.price_data.signal =  1;
  	}
+ 
 action increase_units_held(){
 	quantity=quantity+1;
 	}
+	
 	
 action sell_signal(){
  	hdr.price_data.signal =  0;
  	} 
  	
+ 	
 action decrease_units_held(){
 	quantity=quantity-1;
 	}
+	
+	
 action update_quantity(){
 	hdr.price_data.quantity = quantity;
 	}
 
+
 action operation_drop() {
         mark_to_drop(standard_metadata);
         }
+        
 	     
 apply{
 bit<32> last;
@@ -128,10 +135,10 @@ price_data_array.read(last,hdr.price_data.time-1);
 	
 	if(hdr.price_data.price>last){
 		if(quantity>0){
-		sell_signal();
-		decrease_units_held();
-		update_quantity();
-		send_back();
+			sell_signal();
+			decrease_units_held();
+			update_quantity();
+			send_back();
 		}
 	}
 	if(hdr.price_data.price<last){
@@ -143,7 +150,7 @@ price_data_array.read(last,hdr.price_data.time-1);
 		}
 	}	
 	else{
-	operation_drop();
+		operation_drop();
 	}
 	
 	}	
