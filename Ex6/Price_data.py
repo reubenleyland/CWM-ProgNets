@@ -22,11 +22,13 @@ eth_layer.src = src_MAC
 eth_layer.dst = dst_MAC
 eth_layer.type= 0x1234
 i=0
-for i in range(0,10):
+
+print('market open')
+for i in range(1,11):
 	packet = eth_layer/price_data(price=random.randrange(0,100),time=i)
 	i+=1
-	print(packet.summary)
+	print(packet)
 	sendp(packet,iface="enx0c37965f89d4")
-	time.sleep(5)
-
+	time.sleep(0.5)
+print('market closed')
 

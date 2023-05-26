@@ -92,7 +92,7 @@ action send_back(){
 
 action save_price_data(){
 	price_data_array.write(hdr.price_data.time,hdr.price_data.price);
-}	
+	}	
 
 
 action buy_signal(){
