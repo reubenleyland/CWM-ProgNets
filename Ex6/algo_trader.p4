@@ -10,12 +10,8 @@
 
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
-register<bit<32>>(10) price_data_array
+bit<32> price_data_array[10];
 
-counter index {
-	type : packets;
-	size : 32;
-}
 
 header ethernet_t {
     macAddr_t dstAddr;
@@ -80,7 +76,7 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
 control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
-
+                  
 action send_back() {
        macAddr_t tmp_mac;
        tmp_mac = hdr.ethernet.dstAddr;
@@ -90,45 +86,43 @@ action send_back() {
       standard_metadata.egress_spec = standard_metadata.ingress_port;
     }
 
-action save_price_data(hdr.price_data.price,index)
-	price_data_array.write(index,data)
-	
-action increment_counter() {
-	index.count(1)
-}
+action save_price_data(){
+	price_data_array.write(hdr.price_data.time,hdr.price_data.price);
+}	
+
 
 action buy_signal(){
- 	hdr.price_data.signal =  1  
+ 	hdr.price_data.signal =  1;
  	}
 action sell_signal(){
- 	hdr.price_data.signal =  0  
+ 	hdr.price_data.signal =  0;
  	} 
 action operation_drop() {
         mark_to_drop(standard_metadata);
         }
-apply(increment_counter)
-apply(save_[price_data_array.write)
 	     
 apply{
-	if(hdr.price_data.price>price_data_array[index-1]){
-	sell_signal()
-	send_back()
+	 
+	
+	save_price_data();
+	if(hdr.price_data.price>price_data_array[hdr.price_data.time-1]){
+	sell_signal();
+	send_back();
 	}
-	if(hdr.rpice_data.price<price_daya_array[index-1]){
-	buy_signal
-	send_back()
+	if(hdr.price_data.price<price_data_array[hdr.price_data.time-1]){
+	buy_signal();
+	send_back();
+	}
 	else{
-	operation_drop()
+	operation_drop();
+	}
 	
-	
-	
+	}	
+} 
  
- 
-  
 /*************************************************************************
-****************  E G R E S S   P R O C E S S I N G   *******************
-*************************************************************************/
-
+ ****************  E G R E S S   P R O C E S S I N G   *******************
+ *************************************************************************/
 control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
@@ -136,17 +130,14 @@ control MyEgress(inout headers hdr,
 }
 
 /*************************************************************************
-*************   C H E C K S U M    C O M P U T A T I O N   **************
-*************************************************************************/
+ *************   C H E C K S U M    C O M P U T A T I O N   **************
+ *************************************************************************/
 
-control MyEgress(inout headers hdr,
-                 inout metadata meta,
-                 inout standard_metadata_t standard_metadata) {
+control MyComputeChecksum(inout headers hdr, inout metadata meta) {
     apply { }
 }
 
-/*************************************************************************
-***********************  D E P A R S E R  *******************************
+/***********************  D E P A R S E R  *******************************
 *************************************************************************/
 
 control MyDeparser(packet_out packet, in headers hdr) {
